@@ -55,7 +55,7 @@ void Knn::inference(){
     vector<int> labels = getGroundTruth();
     vector<int> neighborClasses; 
     vector<double> distances; 
-    
+
     double distance = 0.0;
 
 
@@ -72,32 +72,41 @@ void Knn::inference(){
             {
                 cout << "size of distance: " << distances.size() << endl;
                 cout << "Size still lower than k" << endl;
+            
                 neighborClasses.push_back(labels.at((trainIt - train.begin())));
                 distances.push_back(distance);
             }
-            else if(distance < *max_element(distances.begin(),distances.end()))
+            else if(distance < (*max_element(distances.begin(),distances.end())))
             {
-                neighborClasses.erase(max_element(neighborClasses.begin(),neighborClasses.end()));
-                //neighborClasses.erase(neighborClasses.begin() + max_element(distances.begin(),distances.end()));
+                int delIdx; 
+                vector<double>::iterator maxIdx = max_element(distances.begin(), distances.end());
+                delIdx = maxIdx - distances.begin();
+                cout << "Index: " << delIdx << endl;
+                
+                neighborClasses.erase(neighborClasses.begin() + delIdx);
                 neighborClasses.push_back(labels.at((trainIt - train.begin())));
+                
+                distances.erase(distances.begin() + delIdx);
+                //distances.erase(max_element(distances.begin(),distances.end()));
                 distances.push_back(distance);
-                distances.erase(max_element(distances.begin(),distances.end()));
                 
             }
 
             //debug
             cout << "Neighbor classes: " << endl;
             for(vector<int>::iterator a=neighborClasses.begin();a!=neighborClasses.end();a++){
-                cout << *a << " ";
+                cout << *a << "\t";
             }
             
             cout << "\n";
 
             cout << "Distances: " << endl;
             for(vector<double>::iterator a = distances.begin();a!=distances.end();a++)
-                cout << *a << " ";
+                cout << *a << "\t";
 
             cout << "\n";
+            cout << "********************" << endl;
+
 
         }
         
@@ -112,6 +121,7 @@ void Knn::inference(){
         map<int,int>::iterator most = max_element(counters.begin(),counters.end());
         cout << "Dominant class: " <<(*most).first << endl;
 
+        // push dominant class to cluster or results vectors
 
     }
 
