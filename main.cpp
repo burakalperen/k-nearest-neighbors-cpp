@@ -10,19 +10,30 @@ using namespace std;
 
 int main(){
 
+    // int k = 3;
+
+    // Knn algo(k);
+
+    // algo.start();
+
+    vector<int> a;
+    a.push_back(1);
+    a.push_back(12);
+    a.push_back(3);
+    a.push_back(5);
+
+    for (vector<int>::iterator it = a.begin();it!=a.end();it++)
+        cout << *it  << " ";
+
+    a.erase(a.begin() +2);
+
+    cout << "******************\n";
+
+    for (vector<int>::iterator it = a.begin();it!=a.end();it++)
+        cout << *it << " ";
 
 
-    Knn algo;
-    algo.createRandomData();
-    algo.printData();
 
-    cout << "********************" << endl;
-
-    algo.printGroundTruth();
-
-    cout << "\n********************" << endl;
-    algo.createClusterSet();
-    algo.printClusters();
 
     return 0;
 }

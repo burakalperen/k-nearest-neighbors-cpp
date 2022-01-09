@@ -1,14 +1,19 @@
 #include <iostream>
 #include <string.h>
+#include <map>
+#include "math.h"
 #include "Knn.h"
 using namespace std;
 
 typedef pair<int,int> intpair;
 
 
-int Knn::numberOfdata = 10;
+int Knn::numberTrainData = 5;
+int Knn::numberTestData = 1;
 
-Knn::Knn(): groundTruth(numberOfdata)
+
+
+Knn::Knn(int k): k(k),groundTruth(numberTrainData)
 {
 
     generate(groundTruth.begin(),groundTruth.end(),assingClass);
@@ -24,63 +29,180 @@ Knn::~Knn(){
 
 }
 
+void Knn::start(){
+        createRandomData("train"); //create train data
+        createRandomData("test"); // create test data
+        
+        printData("train");
+        cout << "********************" << endl;
+        printData("test");
+        cout << "********************" << endl;
+        printGroundTruth();
+        cout << "\n********************" << endl;
+
+        createClusterSet();
+        //printClusters();
+
+        //cout << "\n********************" << endl;
+        inference();
+}
+
+
+void Knn::inference(){
+
+    vector<Node> train = getTrainData();
+    vector<Node> test = getTestData(); 
+    vector<int> labels = getGroundTruth();
+    vector<int> neighborClasses; 
+    vector<double> distances; 
+    
+    double distance = 0.0;
+
+
+    // vector<int>::iterator labelIt = labels.begin();
+    for(vector<Node>::iterator testIt = test.begin(); testIt!=test.end();testIt++)
+    {
+        cout << "Test data id:" << (*testIt).getId() << endl;
+        for(vector<Node>::iterator trainIt = train.begin(); trainIt!=train.end();trainIt++)
+        {
+            cout << "Train data: "<< "("<< (*trainIt).getId() << "," << (*trainIt).getX() << "," << (*trainIt).getY() << ")" << endl;
+            distance = CalculateEuclidean((*trainIt).getX(),(*trainIt).getY(),(*testIt).getX(),(*testIt).getY());
+            cout << "Distance: " << distance << endl;
+            if (distances.size() < k)
+            {
+                cout << "size of distance: " << distances.size() << endl;
+                cout << "Size still lower than k" << endl;
+                neighborClasses.push_back(labels.at((trainIt - train.begin())));
+                distances.push_back(distance);
+            }
+            else if(distance < *max_element(distances.begin(),distances.end()))
+            {
+                neighborClasses.erase(max_element(neighborClasses.begin(),neighborClasses.end()));
+                //neighborClasses.erase(neighborClasses.begin() + max_element(distances.begin(),distances.end()));
+                neighborClasses.push_back(labels.at((trainIt - train.begin())));
+                distances.push_back(distance);
+                distances.erase(max_element(distances.begin(),distances.end()));
+                
+            }
+
+            //debug
+            cout << "Neighbor classes: " << endl;
+            for(vector<int>::iterator a=neighborClasses.begin();a!=neighborClasses.end();a++){
+                cout << *a << " ";
+            }
+            
+            cout << "\n";
+
+            cout << "Distances: " << endl;
+            for(vector<double>::iterator a = distances.begin();a!=distances.end();a++)
+                cout << *a << " ";
+
+            cout << "\n";
+
+        }
+        
+        // neighborslar içerisinde en fazla olan classı bul
+        // sanki 
+        map<int, int> counters;
+        for(auto i: neighborClasses)
+        {
+        ++counters[i];
+        }   
+
+        map<int,int>::iterator most = max_element(counters.begin(),counters.end());
+        cout << "Dominant class: " <<(*most).first << endl;
+
+
+    }
+
+
+
+}
+
+
+double Knn::CalculateEuclidean(const double x1, const double y1, const double x2, const double y2){
+    /*
+
+    Method to compute calculate euclidean distance between two points.
+    @arg x1 first point x
+    @arg y1 first point y
+    @arg x2 second point x
+    @arg y2 second point y  
+    @returns euclidean distance
+
+    */
+
+
+    return sqrt( pow((x1-x2),2) + pow((y1-y2),2));
+}
+
+
+
+
 int Knn::assingClass()
 {
     static int i=0;
     int hold;
-    if(i<3)
+    if(i<1)
         hold = 1;
-    else if(i<7)
+    else if(i<2)
         hold = 2;
-    else if(i<10)
+    else if(i<6)
         hold = 3;
     i++;
     return hold;
 }
 
-void Knn::createRandomData(){
+void Knn::createRandomData(string inf){
 
     int identity;
     double x,y;
+    int i;
+    int n = 0;
+    
+    if(inf == "train") i = 0, n=getNumberofTrainData();
+    else if(inf == "test") i = getNumberofTrainData(), n = getNumberofTrainData() + getNumberofTestData();    
 
-    for (int i=0;i<getNumberofData();i++)
+    for (; i < n; i++)
     {
-
         identity = i;
         x = (rand() % 9) - 4; // between -5 and 5
         y = (rand() % 9) - 4;
 
-        data.push_back(Node(identity,x,y));
-        //Node *ptr = new Node(i,x,y);
-        //data.push_back(*ptr);
-        //delete ptr;
+        if(inf == "train") trainData.push_back(Node(identity,x,y));
+        else if(inf == "test") testData.push_back(Node(identity,x,y));
     }
 
 }
 
-vector<Node> Knn::getData() const
+vector<Node> Knn::getTrainData() const
 {
-    return data;
+    return trainData;
 }
 
-int Knn::getNumberofData() const{
 
-    return numberOfdata;
+vector<Node> Knn::getTestData() const
+{
+    return testData;
 }
 
-void Knn::printData() const{
+int Knn::getNumberofTrainData() const{
 
-    vector<Node> tempData;
-    tempData = getData();
-    for(vector<Node>::iterator it=tempData.begin(); it!=tempData.end();it++)
-        cout << "(" <<(*it).getId() << "," << (*it).getX() << "," << (*it).getY() << ")" << endl; 
-
+    return numberTrainData;
 }
+
+int Knn::getNumberofTestData() const{
+
+    return numberTestData;
+}
+
+
+
 
 void Knn::createClusterSet() {
 
     vector<int> tempGroundTruth = getGroundTruth();
-    vector<Node> tempData = getData();
+    vector<Node> tempData = getTrainData();
 
     vector<int>::iterator groundIt = tempGroundTruth.begin();
     for(vector<Node>::iterator it=tempData.begin();it!=tempData.end();it++)
@@ -116,3 +238,22 @@ void Knn::printGroundTruth() const{
     for(vector<int>::iterator it=tempGroundTruth.begin();it!=tempGroundTruth.end();it++)
         cout << *it << "\t";
 }
+
+int Knn::getK() const{
+    return k;
+}
+
+void Knn::printData(string dec){
+    vector<Node> tempData;
+    
+    if(dec == "train") 
+        tempData = getTrainData();
+    else if(dec == "test") 
+        tempData = getTestData();
+
+    cout << dec << " data:" << endl;
+    for(vector<Node>::iterator it=tempData.begin(); it!=tempData.end();it++)
+        cout << "(" <<(*it).getId() << "," << (*it).getX() << "," << (*it).getY() << ")" << endl; 
+
+}
+
