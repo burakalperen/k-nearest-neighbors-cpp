@@ -1,8 +1,8 @@
 #include <iostream>
-#include <string.h>
-#include <time.h>
+#include <string>
+#include <ctime>
 #include "Knn.h"
-
+#include <map>
 using namespace std;
 
 // Knn sınıfındaki data sayısını const yap.
@@ -15,6 +15,8 @@ int main(){
     Knn algo(k);
 
     algo.start();
+
+
 
 
 

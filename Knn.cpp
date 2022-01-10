@@ -8,8 +8,8 @@ using namespace std;
 typedef pair<int,int> intpair;
 
 
-int Knn::numberTrainData = 20;
-int Knn::numberTestData = 10;
+int Knn::numberTrainData = 5;
+int Knn::numberTestData = 3;
 
 
 
@@ -40,89 +40,80 @@ void Knn::start(){
 
         createClusterSet();
 
-        inference();
+        inferencev2();
         printClusters();
 }
 
 
-void Knn::inference(){
+
+
+void Knn::inferencev2(){
+
 
     vector<Node> train = getTrainData();
     vector<Node> test = getTestData(); 
     vector<int> labels = getGroundTruth();
-    vector<int> neighborClasses; 
-    vector<double> neighborDistances; 
 
-    double distance = 0.0;
+    multimap<double,int,less<double>> neighbors;
+    vector<int> classCounter;
+    double distance;
 
-
-    // vector<int>::iterator labelIt = labels.begin();
     for(vector<Node>::iterator testIt = test.begin(); testIt!=test.end();testIt++)
     {
         cout << "\nTest data id:" << (*testIt).getId() << endl;
+
         for(vector<Node>::iterator trainIt = train.begin(); trainIt!=train.end();trainIt++)
         {
-            //cout << "Train data: "<< "("<< (*trainIt).getId() << "," << (*trainIt).getX() << "," << (*trainIt).getY() << ")" << endl;
+            cout << "\nTrain id: " << (*trainIt).getId() << endl;
             distance = CalculateEuclidean((*trainIt).getX(),(*trainIt).getY(),(*testIt).getX(),(*testIt).getY());
-            //cout << "Distance: " << distance << endl;
-            if (neighborDistances.size() < k)
+            cout << "Distance: " << distance << endl;
+            if(neighbors.size() < k)
             {
-                //cout << "size of distance: " << neighborDistances.size() << endl;
-                //cout << "Size still lower than k" << endl;
-            
-                neighborClasses.push_back(labels.at((trainIt - train.begin())));
-                neighborDistances.push_back(distance);
+                neighbors.insert({distance,labels.at((trainIt - train.begin()))});
             }
-            else if(distance < (*max_element(neighborDistances.begin(),neighborDistances.end())))
+            else
             {
-                int delIdx; 
-                vector<double>::iterator maxIdx = max_element(neighborDistances.begin(), neighborDistances.end());
-                delIdx = maxIdx - neighborDistances.begin();
-                //cout << "Index: " << delIdx << endl;
-                
-                neighborClasses.erase(neighborClasses.begin() + delIdx);
-                neighborClasses.push_back(labels.at((trainIt - train.begin())));
-                
-                neighborDistances.erase(neighborDistances.begin() + delIdx);
-                //distances.erase(max_element(distances.begin(),distances.end()));
-                neighborDistances.push_back(distance);
-                
+                neighbors.insert({distance,labels.at((trainIt - train.begin()))});
+                neighbors.erase(prev(neighbors.end()));
+
+            }
+        }
+
+        cout << "\nNeighbors map: " << endl;
+        for(multimap<double,int>::iterator it=neighbors.begin();it!=neighbors.end();it++)
+        {
+            cout << "Class: " << (*it).second << " Dist: " << (*it).first << endl;
+        }
+
+        for(int i = 0; i<k; i++)
+        {   
+            int counter = 0;
+            for(multimap<double,int>::iterator it=neighbors.begin(); it!= neighbors.end(); it++)
+            {   
+                if((*it).second == i)
+                {
+                    counter++;
+                }
             }
 
-            //debug
-            cout << "\nNeighbor classes: " << endl;
-            for(vector<int>::iterator a=neighborClasses.begin();a!=neighborClasses.end();a++){
-                cout << *a << "\t";
-            }
-            
-            // cout << "\n";
-
-            // cout << "Neighbor Distances: " << endl;
-            // for(vector<double>::iterator a = neighborDistances.begin();a!=neighborDistances.end();a++)
-            //     cout << *a << "\t";
-
-            // cout << "\n";
-            // cout << "********************" << endl;
+            classCounter.push_back(counter);
 
         }
-        
-         
-        map<int, int> counters;
-        for(auto i: neighborClasses){
-            ++counters[i];
-        }       
 
-        map<int,int>::iterator most = max_element(counters.begin(),counters.end());
-        cout << "\nDominant class: " <<(*most).first << endl;
+        for(vector<int>::iterator it2 = classCounter.begin();it2!=classCounter.end();it2++)
+            cout << *it2 << "\t"; 
 
-        neighborClasses.clear();
-        neighborDistances.clear();
+        predictions.push_back(max_element(classCounter.begin(),classCounter.end()) - classCounter.begin());
 
-        // push dominant class to cluster or results vectors
-        predictions.push_back((*most).first);
-        intpair x =  make_pair((*testIt).getId(),(*most).first);
-        cluster.insert(x);
+
         printPredictions();
+        // cout << "\nPredictions vector: " << endl;
+        // for(vector<int>::iterator it3 = predictions.begin();it3!=predictions.end();it3++)
+        //     cout << *it3 << "\t"; 
+
+        neighbors.clear();
+        classCounter.clear();
+
 
     }
 
@@ -149,12 +140,12 @@ int Knn::assingLabel()
 {
     static int i=0;
     int hold;
-    if(i<6)
+    if(i<2)
+        hold = 0;
+    else if(i<3)
         hold = 1;
-    else if(i<13)
-        hold = 2;
     else if(i<30)
-        hold = 3;
+        hold = 2;
     i++;
     return hold;
 }
@@ -260,7 +251,7 @@ void Knn::printGroundTruth() const{
 
 void Knn::printPredictions() const{
     vector<int> tempPredictions = getPredictions();
-    cout << "Predictions: \n";
+    cout << "\nPredictions: \n";
     for(vector<int>::iterator it = tempPredictions.begin();it!=tempPredictions.end();it++)
         cout << (*it) << "\t";
 }

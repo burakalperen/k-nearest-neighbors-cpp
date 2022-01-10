@@ -22,7 +22,8 @@ class Knn{
         static int assingLabel(); //create ground truth vector for generate algorithm
         void createClusterSet(); //create set to keep classes of whole data in format(data_id,assigned_class)
         
-        void inference();
+        void inferencev2();
+
         double CalculateEuclidean(const double,const double, const double, const double);
 
         int getK() const;
@@ -43,6 +44,8 @@ class Knn{
         const int k;
         static int numberTrainData;
         static int numberTestData;
+
+
 
         vector<Node> trainData; // train data points 
         vector<Node> testData; // test data points
