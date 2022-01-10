@@ -1,25 +1,18 @@
 #include <iostream>
 #include <string.h>
 #include <map>
+#include <set>
 #include "math.h"
 #include "Knn.h"
 using namespace std;
 
-typedef pair<int,int> intpair;
-
-
-int Knn::numberTrainData = 5;
-int Knn::numberTestData = 3;
-
-
+int Knn::numberTrainData = 10;
+int Knn::numberTestData = 5;
 
 Knn::Knn(int k): k(k),groundTruth(numberTrainData)
 {
-
     generate(groundTruth.begin(),groundTruth.end(),assingLabel);
     cout << "Knn constructer is called." << endl;
-
-
 }
 
 
@@ -35,27 +28,22 @@ void Knn::start(){
         
         printData("train");
         printData("test");
-        printGroundTruth();
-        cout << "\n********************" << endl;
-
-        createClusterSet();
-
-        inferencev2();
-        printClusters();
+        // printGroundTruth();
+        // cout << "\n********************" << endl;
+        // inference();
 }
 
 
 
 
-void Knn::inferencev2(){
-
+void Knn::inference(){
 
     vector<Node> train = getTrainData();
     vector<Node> test = getTestData(); 
     vector<int> labels = getGroundTruth();
 
     multimap<double,int,less<double>> neighbors;
-    vector<int> classCounter;
+    vector<int> classCounter(3,0);
     double distance;
 
     for(vector<Node>::iterator testIt = test.begin(); testIt!=test.end();testIt++)
@@ -85,35 +73,21 @@ void Knn::inferencev2(){
             cout << "Class: " << (*it).second << " Dist: " << (*it).first << endl;
         }
 
-        for(int i = 0; i<k; i++)
-        {   
-            int counter = 0;
-            for(multimap<double,int>::iterator it=neighbors.begin(); it!= neighbors.end(); it++)
-            {   
-                if((*it).second == i)
-                {
-                    counter++;
-                }
-            }
-
-            classCounter.push_back(counter);
-
+        multimap<double,int>::iterator it3 = neighbors.begin();
+        while(it3!=neighbors.end())
+        {
+            classCounter[(*it3).second]++;
+            it3++;
         }
 
+        cout << "Class numbers: " << endl;
         for(vector<int>::iterator it2 = classCounter.begin();it2!=classCounter.end();it2++)
             cout << *it2 << "\t"; 
 
         predictions.push_back(max_element(classCounter.begin(),classCounter.end()) - classCounter.begin());
-
-
         printPredictions();
-        // cout << "\nPredictions vector: " << endl;
-        // for(vector<int>::iterator it3 = predictions.begin();it3!=predictions.end();it3++)
-        //     cout << *it3 << "\t"; 
-
         neighbors.clear();
-        classCounter.clear();
-
+        fill(classCounter.begin(),classCounter.end(),0);
 
     }
 
@@ -140,9 +114,9 @@ int Knn::assingLabel()
 {
     static int i=0;
     int hold;
-    if(i<2)
+    if(i<3)
         hold = 0;
-    else if(i<3)
+    else if(i<6)
         hold = 1;
     else if(i<30)
         hold = 2;
@@ -150,15 +124,15 @@ int Knn::assingLabel()
     return hold;
 }
 
-void Knn::createRandomData(string inf){
+void Knn::createRandomData(string who){
 
     int identity;
     double x,y;
     int i;
     int n = 0;
     
-    if(inf == "train") i = 0, n=getNumberofTrainData();
-    else if(inf == "test") i = getNumberofTrainData(), n = getNumberofTrainData() + getNumberofTestData();    
+    if(who == "train") i = 0, n=getNumberofTrainData();
+    else if(who == "test") i = getNumberofTrainData(), n = getNumberofTrainData() + getNumberofTestData();    
 
     for (; i < n; i++)
     {
@@ -166,26 +140,12 @@ void Knn::createRandomData(string inf){
         x = (rand() % 9) - 4; // between -5 and 5
         y = (rand() % 9) - 4;
 
-        if(inf == "train") trainData.push_back(Node(identity,x,y));
-        else if(inf == "test") testData.push_back(Node(identity,x,y));
+        if(who == "train") trainData.push_back(Node(identity,x,y));
+        else if(who == "test") testData.push_back(Node(identity,x,y));
     }
 
 }
 
-void Knn::createClusterSet() {
-
-    vector<int> tempGroundTruth = getGroundTruth();
-    vector<Node> tempData = getTrainData();
-
-    vector<int>::iterator groundIt = tempGroundTruth.begin();
-    for(vector<Node>::iterator it=tempData.begin();it!=tempData.end();it++)
-    {
-        intpair x =  make_pair((*it).getId(),*groundIt);
-        cluster.insert(x);
-        groundIt++;
-    }
-
-}
 
 // GET FUNCTIONS
 
@@ -207,8 +167,9 @@ vector<int> Knn::getPredictions() const{
     return predictions;
 }
 
-set<pair<int,int>> Knn::getClusters() const{
-    return cluster;
+
+int Knn::getK() const{
+    return k;
 }
 
 int Knn::getNumberofTrainData() const{
@@ -221,25 +182,22 @@ int Knn::getNumberofTestData() const{
     return numberTestData;
 }
 
-int Knn::getK() const{
-    return k;
-}
+
 
 // PRINT FUNCTIONS
-void Knn::printData(string dec){
+void Knn::printData(string who){
     vector<Node> tempData;
     
-    if(dec == "train") 
+    if(who == "train") 
         tempData = getTrainData();
-    else if(dec == "test") 
+    else if(who == "test") 
         tempData = getTestData();
 
-    cout << "\n" << dec << " data:" << endl;
+    cout << "\n" << who << " data:" << endl;
     for(vector<Node>::iterator it=tempData.begin(); it!=tempData.end();it++)
-        cout << "(" <<(*it).getId() << "," << (*it).getX() << "," << (*it).getY() << ")" << endl; 
+        (*it).print(); 
 
 }
-
 
 void Knn::printGroundTruth() const{
     vector<int> tempGroundTruth = getGroundTruth();
@@ -248,20 +206,15 @@ void Knn::printGroundTruth() const{
         cout << *it << "\t";
 }
 
-
 void Knn::printPredictions() const{
     vector<int> tempPredictions = getPredictions();
+    vector<Node> testdata = getTestData();
+    
     cout << "\nPredictions: \n";
+    vector<Node>::iterator it2 = testdata.begin();
     for(vector<int>::iterator it = tempPredictions.begin();it!=tempPredictions.end();it++)
-        cout << (*it) << "\t";
-}
-
-
-void Knn::printClusters() const{
-    set<pair<int,int>> tempCluster = getClusters();
-    cout << "\nAll data and labels: "<< endl;
-    for(set<pair<int,int>>::iterator it=tempCluster.begin();it!=tempCluster.end();it++)
-    {
-        cout << "Id: " << (*it).first << "\t" << "Class: " << (*it).second << endl;  
+    {   
+        cout << "Test id: " << (*it2).getId() << "\t"  << "Class:" << (*it) << endl;
+        it2++;
     }
 }

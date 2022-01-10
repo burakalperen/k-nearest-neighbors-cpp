@@ -31,6 +31,9 @@ double Node::getY() const{
     return y;
 }
 
+void Node::print() const{
+    cout << "(" << getId() << "," << getX() << "," << getY() << ")" << endl; 
 
+}
 
 

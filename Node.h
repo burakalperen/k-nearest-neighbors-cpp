@@ -16,6 +16,8 @@ class Node{
         int getId() const;
         double getX() const;
         double getY() const;
+        
+        void print() const;
 
     private:
         const int id;
