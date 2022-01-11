@@ -9,6 +9,8 @@ using namespace std;
 
 class Node{
 
+    friend ostream &operator<<(ostream &, const Node &);
+
     public:
         Node(int,double,double);
         ~Node();
@@ -23,6 +25,8 @@ class Node{
         const int id;
         const double x;
         const double y;
+        
+
 
 
 };

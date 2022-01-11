@@ -1,44 +1,68 @@
 #include <iostream>
 #include <string>
 #include <ctime>
+#include <stdexcept>
 #include "Knn.h"
+#include <set>
 #include <map>
+#include <algorithm>
 using namespace std;
 
-// Knn sınıfındaki data sayısını const yap.
+/*
+    labelları set yap -> generate kullanamıyoruz
+    throw exception geliştir ++
+    operator overloading ++
+    görselleştirme
+
+*/
+
+int callback(int a,int b){
+    return a + b;
+}
+
 
 
 int main(){
 
-    int k = 5;
+    int k; // number of neighbors
 
-    Knn algo(k);
-
-    algo.start();
-
-    // int k = 3;
-    // vector<int> test(k,0);
-    // multimap<double,int,less<double>> ne;
-
-    // ne.insert({3,0});
-    // ne.insert({4,0});
-    // ne.insert({5.2,2});
-    // ne.insert({2.1,1});
-    // ne.insert({5.2,2});
-    // ne.insert({5.2,2});
-    // ne.insert({5.2,2});
-
+    try{
+        cout << "Enter k:";
+        cin >> k;
+        if(k>0){
+            Knn algo(k);
+            algo.start();
+        }
+        else
+            throw invalid_argument("K value must be greate than 0.");
+    }
+    catch(invalid_argument &e){
+        cout << "Exception: " << e.what() << endl;
+        return 0;
+    }
 
 
-    // multimap<double,int>::iterator it = ne.begin();
-    // while(it!=ne.end())
-    // {
-    //     test[(*it).second]++;
-    //     it++;
-    // }
+    // vector<int> foo;
+    // vector<int> bar;
+    // vector<int> result;
 
-    // for(vector<int>::iterator it1=test.begin();it1!=test.end();it1++)
-    //     cout << *it1 << "\t";
+    // foo.push_back(10);
+    // foo.push_back(20);
+    // foo.push_back(30);
+
+    // bar.push_back(5);
+    // bar.push_back(5);
+    // bar.push_back(5);
+
+    // // bar.resize(foo.size());
+    // result.resize(foo.size());
+    
+    // transform (foo.begin(), foo.end(), bar.begin(), result.begin(),callback);
+
+    // for(vector<int>::iterator it=result.begin();it!=result.end();it++)
+    //     cout << *it;
+
+    
 
 
 

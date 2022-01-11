@@ -5,7 +5,6 @@
 #include <string.h>
 #include <vector>
 #include <algorithm>
-#include <set>
 #include "Node.h"
 
 using namespace std;
@@ -19,33 +18,31 @@ class Knn{
 
         void start();
         void createRandomData(string); //create features between -5 and 5
-        static int assingLabel(); //create ground truth vector for generate algorithm
+        static int assingLabel(); // method to assign train labels for generate algorithm
         void inference();
-        double CalculateEuclidean(const double,const double, const double, const double);
+        double CalculateEuclidean(const double &,const double &, const double &, const double &);
         
-
-
         int getK() const;
         int getNumberofTrainData() const;
         int getNumberofTestData() const;
         vector<Node> getTrainData() const;
         vector<Node> getTestData() const;
-        vector<int> getPredictions() const;
-        vector<int> getGroundTruth() const;
+        vector<int> getTrainLabels() const;
+        vector<int> getTestLabels() const;
         
         void printData(string); 
-        void printGroundTruth() const;
-        void printPredictions() const;
+        void printTrainLabels() const;
+        void printTestLabels() const;
 
     private:
         const int k;
-        static int numberTrainData;
-        static int numberTestData;
+        static const int numberTrainData;
+        static const int numberTestData;
 
         vector<Node> trainData; // train data points 
         vector<Node> testData; // test data points
-        vector<int> groundTruth; // classes of train data points
-        vector<int> predictions; // classes of test data points
+        vector<int> trainLabels; // classes of train data points
+        vector<int> testLabels; // predictions
 
 
 };

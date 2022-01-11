@@ -6,12 +6,13 @@
 #include "Knn.h"
 using namespace std;
 
-int Knn::numberTrainData = 10;
-int Knn::numberTestData = 5;
+const int Knn::numberTrainData = 10;
+const int Knn::numberTestData = 5;
 
-Knn::Knn(int k): k(k),groundTruth(numberTrainData)
+Knn::Knn(int clusterNumber): k(clusterNumber),trainLabels(numberTrainData)
 {
-    generate(groundTruth.begin(),groundTruth.end(),assingLabel);
+    
+    generate(trainLabels.begin(),trainLabels.end(),assingLabel);
     cout << "Knn constructer is called." << endl;
 }
 
@@ -28,9 +29,10 @@ void Knn::start(){
         
         printData("train");
         printData("test");
+        printTrainLabels();
         // printGroundTruth();
         // cout << "\n********************" << endl;
-        // inference();
+        inference();
 }
 
 
@@ -38,19 +40,19 @@ void Knn::start(){
 
 void Knn::inference(){
 
-    vector<Node> train = getTrainData();
-    vector<Node> test = getTestData(); 
-    vector<int> labels = getGroundTruth();
+    const vector<Node> &train = getTrainData();
+    const vector<Node> &test = getTestData(); 
+    const vector<int> &labels = getTrainLabels();
 
     multimap<double,int,less<double>> neighbors;
     vector<int> classCounter(3,0);
     double distance;
 
-    for(vector<Node>::iterator testIt = test.begin(); testIt!=test.end();testIt++)
+    for(vector<Node>::const_iterator testIt = test.begin(); testIt!=test.end();testIt++)
     {
         cout << "\nTest data id:" << (*testIt).getId() << endl;
 
-        for(vector<Node>::iterator trainIt = train.begin(); trainIt!=train.end();trainIt++)
+        for(vector<Node>::const_iterator trainIt = train.begin(); trainIt!=train.end();trainIt++)
         {
             cout << "\nTrain id: " << (*trainIt).getId() << endl;
             distance = CalculateEuclidean((*trainIt).getX(),(*trainIt).getY(),(*testIt).getX(),(*testIt).getY());
@@ -84,8 +86,8 @@ void Knn::inference(){
         for(vector<int>::iterator it2 = classCounter.begin();it2!=classCounter.end();it2++)
             cout << *it2 << "\t"; 
 
-        predictions.push_back(max_element(classCounter.begin(),classCounter.end()) - classCounter.begin());
-        printPredictions();
+        testLabels.push_back(max_element(classCounter.begin(),classCounter.end()) - classCounter.begin());
+        printTestLabels();
         neighbors.clear();
         fill(classCounter.begin(),classCounter.end(),0);
 
@@ -94,7 +96,7 @@ void Knn::inference(){
 }
 
 
-double Knn::CalculateEuclidean(const double x1, const double y1, const double x2, const double y2){
+double Knn::CalculateEuclidean(const double &x1, const double &y1, const double &x2, const double &y2){
     /*
 
     Method to compute calculate euclidean distance between two points.
@@ -159,12 +161,12 @@ vector<Node> Knn::getTestData() const
     return testData;
 }
 
-vector<int> Knn::getGroundTruth() const{
-    return groundTruth;
+vector<int> Knn::getTrainLabels() const{
+    return trainLabels;
 }
 
-vector<int> Knn::getPredictions() const{
-    return predictions;
+vector<int> Knn::getTestLabels() const{
+    return testLabels;
 }
 
 
@@ -186,8 +188,7 @@ int Knn::getNumberofTestData() const{
 
 // PRINT FUNCTIONS
 void Knn::printData(string who){
-    vector<Node> tempData;
-    
+    vector <Node> tempData;
     if(who == "train") 
         tempData = getTrainData();
     else if(who == "test") 
@@ -195,24 +196,24 @@ void Knn::printData(string who){
 
     cout << "\n" << who << " data:" << endl;
     for(vector<Node>::iterator it=tempData.begin(); it!=tempData.end();it++)
-        (*it).print(); 
+        cout << (*it); //operator overloading
 
 }
 
-void Knn::printGroundTruth() const{
-    vector<int> tempGroundTruth = getGroundTruth();
+void Knn::printTrainLabels() const{
+    const vector<int> &localTrainLabels = getTrainLabels();
     cout << "\nTrain labels: " << endl;
-    for(vector<int>::iterator it=tempGroundTruth.begin();it!=tempGroundTruth.end();it++)
+    for(vector<int>::const_iterator it=localTrainLabels.begin();it!=localTrainLabels.end();it++)
         cout << *it << "\t";
 }
 
-void Knn::printPredictions() const{
-    vector<int> tempPredictions = getPredictions();
-    vector<Node> testdata = getTestData();
+void Knn::printTestLabels() const{
+    const vector<int> &localTestLabels = getTestLabels();
+    const vector<Node> &testdata = getTestData();
     
     cout << "\nPredictions: \n";
-    vector<Node>::iterator it2 = testdata.begin();
-    for(vector<int>::iterator it = tempPredictions.begin();it!=tempPredictions.end();it++)
+    vector<Node>::const_iterator it2 = testdata.begin();
+    for(vector<int>::const_iterator it = localTestLabels.begin();it!=localTestLabels.end();it++)
     {   
         cout << "Test id: " << (*it2).getId() << "\t"  << "Class:" << (*it) << endl;
         it2++;
