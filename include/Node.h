@@ -1,4 +1,4 @@
-#ifndef NODE
+#ifndef NODE_H
 #define NODE_H
 
 
@@ -9,22 +9,20 @@ using namespace std;
 
 class Node{
 
-    friend ostream &operator<<(ostream &, const Node &);
+    friend ostream &operator<<(ostream &, const Node &); //operator overloading
 
     public:
         Node(int,double,double);
         ~Node();
 
         int getId() const;
-        double getX() const;
-        double getY() const;
+        double getFeature1() const;
+        double getFeature2() const;
         
-        void print() const;
-
     private:
         const int id;
-        const double x;
-        const double y;
+        const double feature1;
+        const double feature2;
         
 
 
